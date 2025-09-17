@@ -1,12 +1,12 @@
 resource "azurerm_key_vault" "kv" {
-  name                        = "${var.application}${var.env}kv"
-  location                    = azurerm_resource_group.rg.location
-  resource_group_name         = azurerm_resource_group.rg.name
-  tenant_id                   = data.azuread_client_config.current.tenant_id
-  soft_delete_retention_days  = 7
-  purge_protection_enabled    = false
-  sku_name = "standard"
-  enable_rbac_authorization = true
+  name                       = "${var.application}${var.env}kv"
+  location                   = azurerm_resource_group.rg.location
+  resource_group_name        = azurerm_resource_group.rg.name
+  tenant_id                  = data.azuread_client_config.current.tenant_id
+  soft_delete_retention_days = 7
+  purge_protection_enabled   = false
+  sku_name                   = "standard"
+  enable_rbac_authorization  = true
 
 }
 

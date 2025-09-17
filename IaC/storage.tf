@@ -1,6 +1,6 @@
 resource "random_integer" "suffix" {
-    min = 100
-    max = 999
+  min = 100
+  max = 999
 }
 
 resource "azurerm_storage_account" "lz_state_sa" {
