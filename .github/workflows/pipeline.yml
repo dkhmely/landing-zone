@@ -84,7 +84,7 @@ jobs:
         uses: trstringer/manual-approval@v1
         with:
           secret: ${{ github.TOKEN }}
-          approvars: dkhmely
+          approvers: dkhmely
           minimum-approvals: 1
           issue-title: "Manual approval for terraform apply"
           issue-body: "Please approve terraform apply"
