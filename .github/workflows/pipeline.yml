@@ -64,7 +64,7 @@ jobs:
         run: terraform plan -var="env=${{ env.ENV }}" -out=tfplan
 
       - name: Upload tf plan
-        uses: actions/upload-artifact@4
+        uses: actions/upload-artifact@v4
         with:
           name: tfplan
           path: IaC/tfplan
@@ -111,7 +111,7 @@ jobs:
         run: terraform init -backend-config=backend.conf
       
       - name: Download artifact
-        uses: actions/download-artifact@4
+        uses: actions/download-artifact@v4
         with:
           name: tfplan
           path: IaC/
