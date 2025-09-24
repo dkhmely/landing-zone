@@ -16,6 +16,7 @@ on:
         options:
           - plan
           - apply
+          - destroy
 
 env:
   ENV: ${{ github.ref_name }}
@@ -49,7 +50,7 @@ jobs:
         run: terraform validate
 
   plan:
-    name: Terraform plan
+    name: Terraform Plan
     if: github.event.inputs.action == 'plan' || github.event.inputs.action == 'apply' || github.event_name == 'push'
     runs-on: ubuntu-latest
     needs: check
@@ -100,8 +101,28 @@ jobs:
           issue-body: "Please approve terraform apply"
           exlude-workflow-initiator-as-approver: false
 
+  destroy-approval:
+    name: Destroy Approval
+    runs-on: ubuntu-latest
+    needs: lint
+    if: github.event.inputs.action == 'destroy'
+
+    permissions:
+      issues: write
+      contents: read
+      
+    steps:
+      - name: Await manual approval
+        uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ github.TOKEN }}
+          approvers: dkhmely
+          minimum-approvals: 1
+          issue-title: "Approval Required for Terraform Destroy"
+          issue-body: "Are you sure you want to destroy environment **${{ github.ref_name }}**?"
+
   apply:
-    name: Terraform apply
+    name: Terraform Apply
     if: github.event.inputs.action == 'apply'
     runs-on: ubuntu-latest
     needs: manual-approval-apply
@@ -130,4 +151,32 @@ jobs:
       - name: Terraform Apply
         working-directory: IaC
         run: terraform apply -auto-approve tfplan
+  
+  destroy:
+    name: Terraform Destroy
+    if: github.event.inputs.action == 'destroy'
+    runs-on: ubuntu-latest
+    needs: destroy-approval
+    environment:
+      name: ${{ github.ref_name }}
 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract Branch Name
+        run: echo "ENV=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+
+      - name: Generate backend.conf
+        run: envsubst < IaC/backend-template.conf > IaC/backend.conf
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: IaC
+        run: terraform init -backend-config="backend.conf"
+
+      - name: Terraform Destroy
+        working-directory: IaC
+        run: terraform destroy -auto-approve -var="env=${{ env.ENV }}"
